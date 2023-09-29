@@ -1,74 +1,34 @@
 package main
 
 import (
+	"GDS-Connect/handlers"
+	"GDS-Connect/middlewares"
+	"GDS-Connect/utils"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
-type user struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-}
-
-var users = []user{
-	{
-		ID:   "0",
-		Name: "Maxence",
-		Age:  21,
-	},
-	{
-		ID:   "1",
-		Name: "Lucas",
-		Age:  23,
-	},
-	{
-		ID:   "3",
-		Name: "Felipe",
-		Age:  25,
-	},
-}
-
-// getUsers returns the users as JSON
-func getUsers(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, users)
-}
-
-func createUser(c *gin.Context) {
-	var newUser user
-
-	// Call BindJSON to bind the received JSON to the <user> type
-	if err := c.BindJSON(&newUser); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Incorrect POST request: Couldn't parse the body."})
+func main() {
+	err, dbContext, client := utils.InitDatabase()
+	if err != nil {
+		println("Error initializing database connection")
+		err := client.Close()
+		if err != nil {
+			println("Error closing the client")
+			return
+		}
 		return
 	}
 
-	// Adds the new user to the slice
-	users = append(users, newUser)
-	c.IndentedJSON(http.StatusCreated, newUser)
-}
-
-func getUserById(ctx *gin.Context) {
-	id := ctx.Param("id")
-
-	for _, elt := range users {
-		if elt.ID == id {
-			ctx.IndentedJSON(http.StatusOK, elt)
-			return
-		}
-	}
-
-	ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "Couldn't find the requested user."})
-}
-
-func main() {
 	router := gin.Default()
+
+	// All routers can access the DB
+	router.Use(middlewares.DbMiddleware(client, dbContext))
 
 	api := router.Group("/api")
 	{
-		api.GET("/users", getUsers)
-		api.GET("/users/:id", getUserById)
-		api.POST("/users", createUser)
+		api.GET("/users", handlers.GetUsers)
+		api.GET("/users/:id", handlers.GetUserById)
+		api.POST("/users", handlers.CreateUser)
 	}
 
 	router.Run("localhost:3000")

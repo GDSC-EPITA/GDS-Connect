@@ -24,6 +24,7 @@ func main() {
 	// All routers can access the DB
 	router.Use(middlewares.DbMiddleware(client, dbContext))
 
+	// [/api] group
 	api := router.Group("/api")
 	{
 		api.GET("/users", handlers.GetUsers)
@@ -31,5 +32,10 @@ func main() {
 		api.POST("/users", handlers.CreateUser)
 	}
 
-	router.Run("localhost:3000")
+	// Starts the server
+	err = router.Run("localhost:3000")
+	if err != nil {
+		println("Error launching the server")
+		return
+	}
 }

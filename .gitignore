@@ -26,4 +26,6 @@ go.work
 
 # Env file
 .env
-/gds-connect-test-firebase-adminsdk-vghzv-532a90c933.json
+
+# Service account key file
+gconnect-7dee8-firebase-adminsdk-lb664-511dac7cc4.json

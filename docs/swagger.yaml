@@ -1,0 +1,27 @@
+definitions:
+  models.User:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/users:
+    get:
+      description: Retrieves all users from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Retrieves all users from the database
+      tags:
+      - Users
+swagger: "2.0"

@@ -23,3 +23,10 @@ To contribute to the project, please comply to the following guidelines :
 * Commit names should consist of a flag in this list: `[feature|fix|remove|refactor]` and a short description
 * Commit description have to describe everything that was implemented/done in this commit
 
+## Usage
+
+### Generate the Swagger for the API
+
+The Swagger is generated through comments in the handlers for the API endpoints.
+Run `swag init` at the root of the project. This will generate the Swagger by parsing the comments on the API endpoints and place the files in the `docs/` folder.
+The swagger will be accessible at `http://localhost:3000/api/swagger/index.html`.

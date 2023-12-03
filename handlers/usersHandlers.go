@@ -10,7 +10,19 @@ import (
 	"net/http"
 )
 
-// GetUsers Returns the users from the database
+// curl {{base_url}}:{{server_port}}/api/users
+
+// @BasePath /api/v1
+
+// GetUsers
+// PingExample godoc
+// @Summary Retrieves all users from the database
+// @Schemes
+// @Description Retrieves all users from the database
+// @Tags Users
+// @Produce json
+// @Success 200 {array} models.User
+// @Router /api/users [get]
 func GetUsers(ctx *gin.Context) {
 
 	client, dbContext := GetDatabase(ctx)

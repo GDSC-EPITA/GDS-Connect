@@ -1,10 +1,13 @@
 package main
 
 import (
+	docs "GDS-Connect/docs"
 	"GDS-Connect/handlers"
 	"GDS-Connect/middlewares"
 	"GDS-Connect/utils"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -21,6 +24,8 @@ func main() {
 
 	router := gin.Default()
 
+	docs.SwaggerInfo.BasePath = "/api/v1"
+
 	// All routers can access the DB
 	router.Use(middlewares.DbMiddleware(client, dbContext))
 
@@ -30,6 +35,9 @@ func main() {
 		api.GET("/users", handlers.GetUsers)
 		api.GET("/users/:id", handlers.GetUserById)
 		api.POST("/users", handlers.CreateUser)
+		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+		// ginSwagger.URL("http://localhost:3000/swagger/doc.json"),
+		// ginSwagger.DefaultModelsExpandDepth(-1)))
 	}
 
 	// Starts the server

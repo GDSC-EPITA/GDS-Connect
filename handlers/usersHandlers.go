@@ -12,7 +12,7 @@ import (
 
 // curl {{base_url}}:{{server_port}}/api/users
 
-// @BasePath /api/v1
+// @BasePath /api
 
 // GetUsers
 // PingExample godoc
@@ -22,7 +22,7 @@ import (
 // @Tags Users
 // @Produce json
 // @Success 200 {array} models.User
-// @Router /api/users [get]
+// @Router /users [get]
 func GetUsers(ctx *gin.Context) {
 
 	client, dbContext := GetDatabase(ctx)

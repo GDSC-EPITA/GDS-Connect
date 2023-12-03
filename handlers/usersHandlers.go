@@ -12,8 +12,6 @@ import (
 
 // curl {{base_url}}:{{server_port}}/api/users
 
-// @BasePath /api
-
 // GetUsers
 // PingExample godoc
 // @Summary Retrieves all users from the database

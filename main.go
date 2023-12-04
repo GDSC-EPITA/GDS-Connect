@@ -35,6 +35,7 @@ func main() {
 		api.GET("/users", handlers.GetUsers)
 		api.GET("/users/:id", handlers.GetUserById)
 		api.POST("/users", handlers.CreateUser)
+		api.GET("/users/:id/matches", handlers.GetMatches)
 		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 		// ginSwagger.URL("http://localhost:3000/swagger/doc.json"),
 		// ginSwagger.DefaultModelsExpandDepth(-1)))

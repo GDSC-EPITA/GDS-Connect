@@ -75,8 +75,11 @@ func InsertUserInDatabase(err error, client *firestore.Client, ctx context.Conte
 
 	// Adds a userTmp to the <users> collection in the Firestore DB
 	_, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
+		"id":  newUser.Id, 
 		"name": newUser.Name,
 		"age":  newUser.Age,
+		"gender": newUser.Gender,
+		"interests": newUser.Interests,
 	})
 	if err != nil {
 		log.Fatal(err)

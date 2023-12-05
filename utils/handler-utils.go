@@ -3,7 +3,6 @@ package utils
 import (
 	"GDS-Connect/models"
 	"context"
-    "strconv"
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
     "github.com/gin-gonic/gin"
@@ -17,37 +16,25 @@ func GetDatabase(ctx *gin.Context) (*firestore.Client, context.Context) {
 	return client, dbContext
 }
 
-// GetUserById retrieves a user from the database by their ID
-func GetUserById(client *firestore.Client, dbContext context.Context, idParam string) (models.User, error) {
+// GetUserById retrieves a user from the database by their document ID
+func GetUserById(client *firestore.Client, dbContext context.Context, docId string) (models.User, error) {
     var user models.User
 
-    // Convert the idParam to an integer
-    id, err := strconv.Atoi(idParam)
+    docSnap, err := client.Collection("users").Doc(docId).Get(dbContext)
     if err != nil {
         return user, err
     }
 
-    // Query Firestore for a user with the matching 'id' field
-    query := client.Collection("users").Where("id", "==", id).Limit(1)
-    iter := query.Documents(dbContext)
-    defer iter.Stop()
-
-    doc, err := iter.Next()
-    if err != nil {
-        return user, err
-    }
-
-    if err := doc.DataTo(&user); err != nil {
+    if err := docSnap.DataTo(&user); err != nil {
         return user, err
     }
 
     return user, nil
 }
 
-// FindMatchingUsers finds users with at least one matching interest with the given user ID
-func FindMatchingUsers(client *firestore.Client, dbContext context.Context, userID string) ([]models.User, error) {
-    // First, get the user by ID to find their interests
-    user, err := GetUserById(client, dbContext, userID)
+// FindMatchingUsers finds users with at least one matching interest with the given user document ID
+func FindMatchingUsers(client *firestore.Client, dbContext context.Context, userDocId string) ([]models.User, error) {
+    user, err := GetUserById(client, dbContext, userDocId)
     if err != nil {
         return nil, err
     }
@@ -75,7 +62,8 @@ func FindMatchingUsers(client *firestore.Client, dbContext context.Context, user
 
         var otherUser models.User
         if err := doc.DataTo(&otherUser); err == nil {
-            if otherUser.Id != user.Id {
+            // Ensure not to match the same user
+            if doc.Ref.ID != userDocId {
                 matchedUsers = append(matchedUsers, otherUser)
             }
         }

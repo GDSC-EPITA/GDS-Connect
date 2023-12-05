@@ -5,8 +5,6 @@ definitions:
         type: integer
       gender:
         type: string
-      id:
-        type: integer
       interests:
         items:
           type: string
@@ -19,7 +17,8 @@ info:
 paths:
   /users:
     get:
-      description: Retrieves all users from the database
+      description: Retrieves all users from the database along with their Firestore
+        document IDs
       produces:
       - application/json
       responses:
@@ -29,7 +28,11 @@ paths:
             items:
               $ref: '#/definitions/models.User'
             type: array
-      summary: Retrieves all users from the database
+        "500":
+          description: 'Error: Error retrieving users'
+          schema:
+            type: string
+      summary: Retrieves all users from the database with their document IDs
       tags:
       - Users
     post:
@@ -51,7 +54,7 @@ paths:
           schema:
             type: string
         "400":
-          description: 'Error: Incorrect POST request: Couldn''t parse the body.'
+          description: 'Error: Interests cannot be null'
           schema:
             type: string
       summary: Creates a new user
@@ -65,7 +68,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -94,7 +97,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

@@ -17,14 +17,14 @@ const docTemplate = `{
     "paths": {
         "/users": {
             "get": {
-                "description": "Retrieves all users from the database",
+                "description": "Retrieves all users from the database along with their Firestore document IDs",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Retrieves all users from the database",
+                "summary": "Retrieves all users from the database with their document IDs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -33,6 +33,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/models.User"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Error: Error retrieving users",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -68,7 +74,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Error: Incorrect POST request: Couldn't parse the body.",
+                        "description": "Error: Interests cannot be null",
                         "schema": {
                             "type": "string"
                         }
@@ -88,7 +94,7 @@ const docTemplate = `{
                 "summary": "Get a user by ID",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "User ID",
                         "name": "id",
                         "in": "path",
@@ -132,7 +138,7 @@ const docTemplate = `{
                 "summary": "Match users by shared interests",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "User ID",
                         "name": "id",
                         "in": "path",
@@ -180,9 +186,6 @@ const docTemplate = `{
                 },
                 "gender": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "interests": {
                     "type": "array",

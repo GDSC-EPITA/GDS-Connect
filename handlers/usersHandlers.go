@@ -11,18 +11,24 @@ import (
 // curl {{base_url}}:{{server_port}}/api/users
 
 // GetUsers godoc
-// @Summary Retrieves all users from the database
+// @Summary Retrieves all users from the database with their document IDs
 // @Schemes
-// @Description Retrieves all users from the database
+// @Description Retrieves all users from the database along with their Firestore document IDs
 // @Tags Users
 // @Produce json
 // @Success 200 {array} models.User
+// @Failure 500 {object} string "Error: Error retrieving users"
 // @Router /users [get]
 func GetUsers(ctx *gin.Context) {
 
 	client, dbContext := utils.GetDatabase(ctx)
 
 	users := utils.GetUsersFromDatabase(client, dbContext)
+
+	if users == nil {
+		ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving users"})
+		return
+	}
 
 	ctx.IndentedJSON(http.StatusOK, users)
 }
@@ -32,7 +38,7 @@ func GetUsers(ctx *gin.Context) {
 // @Description Returns the user with the given ID from the database
 // @Tags Users
 // @Produce  json
-// @Param id path int true "User ID"
+// @Param id path string true "User ID"
 // @Success 200 {object} models.User "User data"
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: Couldn't find the requested user"
@@ -66,6 +72,7 @@ func GetUserById(ctx *gin.Context) {
 // @Param user body models.User required "User info"
 // @Success 201 {object} string "User created"
 // @Failure 400 {object} string "Error: Incorrect POST request: Couldn't parse the body."
+// @Failure 400 {object} string "Error: Interests cannot be null"
 // @Router /users [post]
 func CreateUser(ctx *gin.Context) {
 	var newUser models.User
@@ -73,6 +80,12 @@ func CreateUser(ctx *gin.Context) {
 	// Call BindJSON to bind the received JSON to the <userTmp> type
 	if err := ctx.BindJSON(&newUser); err != nil {
 		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Incorrect POST request: Couldn't parse the body."})
+		return
+	}
+
+	// Validate that interests are not null
+	if newUser.Interests == nil || len(newUser.Interests) == 0 {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Interests cannot be null"})
 		return
 	}
 
@@ -88,7 +101,7 @@ func CreateUser(ctx *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param id path int true "User ID"
+// @Param id path string true "User ID"
 // @Success 200 {array} models.User "List of users with matching interests"
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: User not found"

@@ -84,7 +84,7 @@ paths:
       summary: Get a user by ID
       tags:
       - Users
-  /users/{id}/match:
+  /users/{id}/matches:
     get:
       consumes:
       - application/json

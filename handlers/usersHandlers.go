@@ -93,7 +93,7 @@ func CreateUser(ctx *gin.Context) {
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: User not found"
 // @Failure 500 {object} string "Error: Internal server error"
-// @Router /users/{id}/match [get]
+// @Router /users/{id}/matches [get]
 func GetMatches(ctx *gin.Context) {
     id := ctx.Param("id")
 

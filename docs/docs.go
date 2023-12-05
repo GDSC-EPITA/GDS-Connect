@@ -117,7 +117,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}/match": {
+        "/users/{id}/matches": {
             "get": {
                 "description": "Finds users with matching interests based on the given user ID",
                 "consumes": [

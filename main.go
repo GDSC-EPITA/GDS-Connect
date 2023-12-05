@@ -24,7 +24,7 @@ func main() {
 
 	router := gin.Default()
 
-	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.BasePath = "/api"
 
 	// All routers can access the DB
 	router.Use(middlewares.DbMiddleware(client, dbContext))

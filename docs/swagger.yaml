@@ -3,15 +3,22 @@ definitions:
     properties:
       age:
         type: integer
+      gender:
+        type: string
+      interests:
+        items:
+          type: string
+        type: array
       name:
         type: string
     type: object
 info:
   contact: {}
 paths:
-  /api/users:
+  /users:
     get:
-      description: Retrieves all users from the database
+      description: Retrieves all users from the database along with their Firestore
+        document IDs
       produces:
       - application/json
       responses:
@@ -21,7 +28,98 @@ paths:
             items:
               $ref: '#/definitions/models.User'
             type: array
-      summary: Retrieves all users from the database
+        "500":
+          description: 'Error: Error retrieving users'
+          schema:
+            type: string
+      summary: Retrieves all users from the database with their document IDs
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Adds a user from the body of the request to the database
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created
+          schema:
+            type: string
+        "400":
+          description: 'Error: Interests cannot be null'
+          schema:
+            type: string
+      summary: Creates a new user
+      tags:
+      - Users
+  /users/{id}:
+    get:
+      description: Returns the user with the given ID from the database
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: 'Error: Invalid user ID'
+          schema:
+            type: string
+        "404":
+          description: 'Error: Couldn''t find the requested user'
+          schema:
+            type: string
+      summary: Get a user by ID
+      tags:
+      - Users
+  /users/{id}/matches:
+    get:
+      consumes:
+      - application/json
+      description: Finds users with matching interests based on the given user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users with matching interests
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: 'Error: Invalid user ID'
+          schema:
+            type: string
+        "404":
+          description: 'Error: User not found'
+          schema:
+            type: string
+        "500":
+          description: 'Error: Internal server error'
+          schema:
+            type: string
+      summary: Match users by shared interests
       tags:
       - Users
 swagger: "2.0"

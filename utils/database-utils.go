@@ -2,13 +2,14 @@ package utils
 
 import (
 	"GDS-Connect/models"
-	"cloud.google.com/go/firestore"
 	"context"
+	"log"
+	"os"
+
+	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go/v4"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
-	"log"
-	"os"
 )
 
 // InitDatabase Inits the database and returns the client and context generated
@@ -59,7 +60,9 @@ func GetUsersFromDatabase(client *firestore.Client, ctx context.Context) []map[s
 	// Converts the iterator to a list
 	var userArray []map[string]interface{}
 	for _, user := range users {
-		userArray = append(userArray, user.Data())
+		userData := user.Data()
+		userData["id"] = user.Ref.ID // Adds the document ID to the user data
+		userArray = append(userArray, userData)
 	}
 
 	// fmt.Printf("%#v\n", userArray)
@@ -73,10 +76,18 @@ func InsertUserInDatabase(err error, client *firestore.Client, ctx context.Conte
 		return
 	}
 
+	// Validate that interests are not null
+	if newUser.Interests == nil || len(newUser.Interests) == 0 {
+		log.Printf("Error: User <%s> cannot have null or empty interests", newUser.Name)
+		return
+	}
+
 	// Adds a userTmp to the <users> collection in the Firestore DB
 	_, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
-		"name": newUser.Name,
-		"age":  newUser.Age,
+		"name":      newUser.Name,
+		"age":       newUser.Age,
+		"gender":    newUser.Gender,
+		"interests": newUser.Interests,
 	})
 	if err != nil {
 		log.Fatal(err)

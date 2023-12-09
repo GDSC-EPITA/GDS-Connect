@@ -6,6 +6,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
+	"slices"
 )
 
 // GetDatabase Retrieves the database client and context from the gin context
@@ -72,26 +73,54 @@ func FindMatchingUsers(client *firestore.Client, dbContext context.Context, user
 	return matchedUsers, nil
 }
 
-// MakeVisibleToUser makes the given user visible to another given user, based on their document IDs
-func MakeVisibleToUser(client *firestore.Client, dbContext context.Context, userDocId string, otherUserDocId string) error {
-	_, err := client.Collection("users").Doc(userDocId).Update(dbContext, []firestore.Update{
-		{
-			Path:  "usersVisibility",
-			Value: firestore.ArrayUnion(otherUserDocId),
-		},
-	})
+// MakeVisibleToUsers makes the given user visible to other given users, based on their document IDs
+func MakeVisibleToUsers(client *firestore.Client, dbContext context.Context, userDocId string, otherUserDocIds []string) error {
+	docRef := client.Collection("users").Doc(userDocId)
+	docSnap, err := docRef.Get(dbContext)
+	if err != nil {
+		return err
+	}
 
+	var user models.User
+	err = docSnap.DataTo(&user)
+	if err != nil {
+		return err
+	}
+
+	for _, otherUserDocId := range otherUserDocIds {
+		if !slices.Contains(user.UsersVisibility, otherUserDocId) {
+			user.UsersVisibility = append(user.UsersVisibility, otherUserDocId)
+		}
+	}
+	// Add the other users to the visibility list
+	_, err = docRef.Set(dbContext, user)
 	return err
 }
 
-func MakeInvisibleToUser(client *firestore.Client, dbContext context.Context, userDocId string, otherUserDocId string) error {
-	_, err := client.Collection("users").Doc(userDocId).Update(dbContext, []firestore.Update{
-		{
-			Path:  "usersVisibility",
-			Value: firestore.ArrayRemove(otherUserDocId),
-		},
-	})
+// MakeInvisibleToUsers makes the given user invisible to other given users, based on their document IDs
+func MakeInvisibleToUsers(client *firestore.Client, dbContext context.Context, userDocId string, otherUserDocIds []string) error {
+	docRef := client.Collection("users").Doc(userDocId)
+	docSnap, err := docRef.Get(dbContext)
+	if err != nil {
+		return err
+	}
 
+	var user models.User
+	err = docSnap.DataTo(&user)
+	if err != nil {
+		return err
+	}
+
+	var newVisibilityList = []string{}
+	for _, id := range user.UsersVisibility {
+		if !slices.Contains(otherUserDocIds, id) {
+			newVisibilityList = append(newVisibilityList, id)
+		}
+	}
+
+	user.UsersVisibility = newVisibilityList
+	// Remove the other users from the visibility list
+	_, err = docRef.Set(dbContext, user)
 	return err
 }
 

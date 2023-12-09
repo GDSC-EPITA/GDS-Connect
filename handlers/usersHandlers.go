@@ -3,9 +3,9 @@ package handlers
 import (
 	"GDS-Connect/models"
 	"GDS-Connect/utils"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"github.com/gin-gonic/gin"
 )
 
 // curl {{base_url}}:{{server_port}}/api/users
@@ -44,23 +44,22 @@ func GetUsers(ctx *gin.Context) {
 // @Failure 404 {object} string "Error: Couldn't find the requested user"
 // @Router /users/{id} [get]
 func GetUserById(ctx *gin.Context) {
-    id := ctx.Param("id")
+	id := ctx.Param("id")
 
-    client, dbContext := utils.GetDatabase(ctx)
+	client, dbContext := utils.GetDatabase(ctx)
 
-    user, err := utils.GetUserById(client, dbContext, id)
-    if err != nil {
-        if err == strconv.ErrSyntax {
-            ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
-        } else {
-            ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "Couldn't find the requested user."})
-        }
-        return
-    }
+	user, err := utils.GetUserById(client, dbContext, id)
+	if err != nil {
+		if err == strconv.ErrSyntax {
+			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		} else {
+			ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "Couldn't find the requested user."})
+		}
+		return
+	}
 
-    ctx.IndentedJSON(http.StatusOK, user)
+	ctx.IndentedJSON(http.StatusOK, user)
 }
-
 
 // CreateUser godoc
 // @Summary Creates a new user
@@ -108,21 +107,98 @@ func CreateUser(ctx *gin.Context) {
 // @Failure 500 {object} string "Error: Internal server error"
 // @Router /users/{id}/matches [get]
 func GetMatches(ctx *gin.Context) {
-    id := ctx.Param("id")
+	id := ctx.Param("id")
 
-    client, dbContext := utils.GetDatabase(ctx)
+	client, dbContext := utils.GetDatabase(ctx)
 
-    // Utilize the FindMatchingUsers utility function
-    matchedUsers, err := utils.FindMatchingUsers(client, dbContext, id)
-    if err != nil {
-        if err == strconv.ErrSyntax {
-            ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
-        } else {
-            ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error finding matches"})
-        }
-        return
-    }
+	// Utilize the FindMatchingUsers utility function
+	matchedUsers, err := utils.FindMatchingUsers(client, dbContext, id)
+	if err != nil {
+		if err == strconv.ErrSyntax {
+			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		} else {
+			ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error finding matches"})
+		}
+		return
+	}
 
-    ctx.IndentedJSON(http.StatusOK, matchedUsers)
+	ctx.IndentedJSON(http.StatusOK, matchedUsers)
 }
 
+type OtherUsers struct {
+	IDs []string `json:"otherUsers"`
+}
+
+// MakeVisible godoc
+// @Summary Make a user visible to other given users
+// @Description Makes a user visible to other users based on the given user ID
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param id path string true "User ID"
+// @Success 200 {object} string "User visibility updated"
+// @Failure 400 {object} string "Error: Invalid user ID"
+// @Failure 404 {object} string "Error: User not found"
+// @Failure 500 {object} string "Error: Internal server error"
+// @Router /users/{id}/visible [post]
+func MakeVisible(ctx *gin.Context) {
+	// Get other users from the body of the request
+	var otherUsers OtherUsers
+	if err := ctx.BindJSON(&otherUsers); err != nil {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Incorrect POST request: Couldn't parse the body."})
+		return
+	}
+
+	id := ctx.Param("id")
+	client, dbContext := utils.GetDatabase(ctx)
+
+	err := utils.MakeVisibleToUsers(client, dbContext, id, otherUsers.IDs)
+	if err != nil {
+		if err == strconv.ErrSyntax {
+			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		} else {
+			println(err.Error())
+			ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error making user visible"})
+		}
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, gin.H{"message": "User visibility updated"})
+}
+
+// MakeInvisible godoc
+// @Summary Make a user invisible to other given users
+// @Description Makes a user invisible to other users based on the given user ID
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param id path string true "User ID"
+// @Success 200 {object} string "User visibility updated"
+// @Failure 400 {object} string "Error: Invalid user ID"
+// @Failure 404 {object} string "Error: User not found"
+// @Failure 500 {object} string "Error: Internal server error"
+// @Router /users/{id}/invisible [post]
+func MakeInvisible(ctx *gin.Context) {
+	// Get other users from the body of the request
+	var otherUsers OtherUsers
+	if err := ctx.BindJSON(&otherUsers); err != nil {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Incorrect POST request: Couldn't parse the body."})
+		return
+	}
+
+	id := ctx.Param("id")
+	client, dbContext := utils.GetDatabase(ctx)
+
+	err := utils.MakeInvisibleToUsers(client, dbContext, id, otherUsers.IDs)
+	if err != nil {
+		if err == strconv.ErrSyntax {
+			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		} else {
+			println(err.Error())
+			ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error making user invisible"})
+		}
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, gin.H{"message": "User visibility updated"})
+}

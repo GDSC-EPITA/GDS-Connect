@@ -1,8 +1,17 @@
 definitions:
+  handlers.OtherUsers:
+    properties:
+      otherUsers:
+        items:
+          type: string
+        type: array
+    type: object
   models.User:
     properties:
       age:
         type: integer
+      anonymous:
+        type: boolean
       gender:
         type: string
       interests:
@@ -11,6 +20,10 @@ definitions:
         type: array
       name:
         type: string
+      usersVisibility:
+        items:
+          type: string
+        type: array
     type: object
 info:
   contact: {}
@@ -87,6 +100,84 @@ paths:
       summary: Get a user by ID
       tags:
       - Users
+  /users/{id}/makeInvisible:
+    post:
+      consumes:
+      - application/json
+      description: Makes a user invisible to other users based on the given user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Other users
+        in: body
+        name: otherUsers
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.OtherUsers'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User visibility updated
+          schema:
+            type: string
+        "400":
+          description: 'Error: Invalid user ID'
+          schema:
+            type: string
+        "404":
+          description: 'Error: User not found'
+          schema:
+            type: string
+        "500":
+          description: 'Error: Internal server error'
+          schema:
+            type: string
+      summary: Make a user invisible to other given users
+      tags:
+      - Users
+  /users/{id}/makeVisible:
+    post:
+      consumes:
+      - application/json
+      description: Makes a user visible to other users based on the given user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Other users
+        in: body
+        name: otherUsers
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.OtherUsers'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User visibility updated
+          schema:
+            type: string
+        "400":
+          description: 'Error: Invalid user ID'
+          schema:
+            type: string
+        "404":
+          description: 'Error: User not found'
+          schema:
+            type: string
+        "500":
+          description: 'Error: Internal server error'
+          schema:
+            type: string
+      summary: Make a user visible to other given users
+      tags:
+      - Users
   /users/{id}/matches:
     get:
       consumes:
@@ -120,6 +211,40 @@ paths:
           schema:
             type: string
       summary: Match users by shared interests
+      tags:
+      - Users
+  /users/{id}/updateVisibility:
+    post:
+      consumes:
+      - application/json
+      description: Makes a user visible or invisible to all other users based on the
+        given user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User visibility updated
+          schema:
+            type: string
+        "400":
+          description: 'Error: Invalid user ID'
+          schema:
+            type: string
+        "404":
+          description: 'Error: User not found'
+          schema:
+            type: string
+        "500":
+          description: 'Error: Internal server error'
+          schema:
+            type: string
+      summary: Make a user visibility to all other users
       tags:
       - Users
 swagger: "2.0"

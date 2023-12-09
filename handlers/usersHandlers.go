@@ -136,11 +136,12 @@ type OtherUsers struct {
 // @Accept  json
 // @Produce  json
 // @Param id path string true "User ID"
+// @Param otherUsers body OtherUsers true "Other users"
 // @Success 200 {object} string "User visibility updated"
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: User not found"
 // @Failure 500 {object} string "Error: Internal server error"
-// @Router /users/{id}/visible [post]
+// @Router /users/{id}/makeVisible [post]
 func MakeVisible(ctx *gin.Context) {
 	// Get other users from the body of the request
 	var otherUsers OtherUsers
@@ -173,11 +174,12 @@ func MakeVisible(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param id path string true "User ID"
+// @Param otherUsers body OtherUsers true "Other users"
 // @Success 200 {object} string "User visibility updated"
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: User not found"
 // @Failure 500 {object} string "Error: Internal server error"
-// @Router /users/{id}/invisible [post]
+// @Router /users/{id}/makeInvisible [post]
 func MakeInvisible(ctx *gin.Context) {
 	// Get other users from the body of the request
 	var otherUsers OtherUsers
@@ -214,7 +216,7 @@ func MakeInvisible(ctx *gin.Context) {
 // @Failure 400 {object} string "Error: Invalid user ID"
 // @Failure 404 {object} string "Error: User not found"
 // @Failure 500 {object} string "Error: Internal server error"
-// @Router /users/{id}/visibleToAll [post]
+// @Router /users/{id}/updateVisibility [post]
 func UpdateVisibilityToAll(ctx *gin.Context) {
 	id := ctx.Param("id")
 	client, dbContext := utils.GetDatabase(ctx)

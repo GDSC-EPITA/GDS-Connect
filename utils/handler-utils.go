@@ -124,26 +124,27 @@ func MakeInvisibleToUsers(client *firestore.Client, dbContext context.Context, u
 	return err
 }
 
-// MakeVisibleToAllUsers makes the given user visible to all other users
-func MakeVisibleToAllUsers(client *firestore.Client, dbContext context.Context, userDocId string) error {
-	_, err := client.Collection("users").Doc(userDocId).Update(dbContext, []firestore.Update{
-		{
-			Path:  "Anonymous",
-			Value: true,
-		},
-	})
+// UpdateVisibility makes the given user visible or invisible to all other users
+func UpdateVisibility(client *firestore.Client, dbContext context.Context, userDocId string) (*bool, error) {
+	docRef := client.Collection("users").Doc(userDocId)
+	docSnap, err := docRef.Get(dbContext)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
-}
+	var user models.User
+	err = docSnap.DataTo(&user)
+	if err != nil {
+		return nil, err
+	}
 
-// MakeInvisibleToAllUsers makes the given user invisible to all other users
-func MakeInvisibleToAllUsers(client *firestore.Client, dbContext context.Context, userDocId string) error {
-	_, err := client.Collection("users").Doc(userDocId).Update(dbContext, []firestore.Update{
-		{
-			Path:  "Anonymous",
-			Value: false,
-		},
-	})
+	if user.Anonymous == nil {
+		user.Anonymous = new(bool)
+		*user.Anonymous = true
+	} else {
+		*user.Anonymous = !*user.Anonymous
+	}
 
-	return err
+	_, err = docRef.Set(dbContext, user)
+	return user.Anonymous, err
 }

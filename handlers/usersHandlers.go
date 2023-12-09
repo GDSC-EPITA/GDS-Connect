@@ -202,3 +202,33 @@ func MakeInvisible(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, gin.H{"message": "User visibility updated"})
 }
+
+// UpdateVisibilityToAll godoc
+// @Summary Make a user visibility to all other users
+// @Description Makes a user visible or invisible to all other users based on the given user ID
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param id path string true "User ID"
+// @Success 200 {object} string "User visibility updated"
+// @Failure 400 {object} string "Error: Invalid user ID"
+// @Failure 404 {object} string "Error: User not found"
+// @Failure 500 {object} string "Error: Internal server error"
+// @Router /users/{id}/visibleToAll [post]
+func UpdateVisibilityToAll(ctx *gin.Context) {
+	id := ctx.Param("id")
+	client, dbContext := utils.GetDatabase(ctx)
+
+	res, err := utils.UpdateVisibility(client, dbContext, id)
+	if err != nil {
+		if err == strconv.ErrSyntax {
+			ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		} else {
+			println(err.Error())
+			ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error making user visible"})
+		}
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, gin.H{"anonymous": *res})
+}

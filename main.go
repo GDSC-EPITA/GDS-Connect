@@ -38,6 +38,7 @@ func main() {
 		api.GET("/users/:id/matches", handlers.GetMatches)
 		api.POST("/users/:id/makeVisible", handlers.MakeVisible)
 		api.POST("/users/:id/makeInvisible", handlers.MakeInvisible)
+		api.POST("/users/:id/updateVisibility", handlers.UpdateVisibilityToAll)
 		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 		// ginSwagger.URL("http://localhost:3000/swagger/doc.json"),
 		// ginSwagger.DefaultModelsExpandDepth(-1)))
